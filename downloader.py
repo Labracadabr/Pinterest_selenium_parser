@@ -66,10 +66,10 @@ async def main():
                     last_step = length
                 print(f'Скачано {last_step} из {length}')
             else:
-                print('\nГотово')
-                print("%s sec" % round(time.time() - start_time))
                 break
 
 
-if download_filtered and __name__ == '__main__':
-    asyncio.run(main())
+asyncio.run(main())
+
+print('\nГотово')
+print("%s sec" % round(time.time() - start_time))

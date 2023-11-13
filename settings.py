@@ -30,6 +30,8 @@ for file in (primary_save_file, secondary_save_file, done_file, download_links):
             print('Создан файл', file)
 
 
+# функции
+
 # сохранить найденные ссылки и вернуть их число до и после сохранения
 def save(file: str, data: list):
     # открыть сохраненные ссылки

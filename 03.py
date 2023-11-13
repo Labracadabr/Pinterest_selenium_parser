@@ -4,14 +4,13 @@ from bs4 import BeautifulSoup
 from settings import *
 import re
 import time
-from tqdm import tqdm
 
 start_time = time.time()
 
 # RegEx паттерны для нахождения ссылки на скачивание
 patterns = [r'"url":"https://i\.pinimg\.com[^"]+\.gif"',
             r'"url":"https://v1\.pinimg\.com[^"]+\.mp4"',
-            r'"url":"https://i\.pinimg\.com[^"]+\.jpg"',]
+            r'"url":"https://i\.pinimg\.com/originals[^"]+\.jpg"',]
 
 # ссылки на посты, которые нужно открыть
 with open(primary_save_file, 'r') as f1, open(secondary_save_file, 'r') as f2:
@@ -43,7 +42,6 @@ async def fetch_url(session, url):
             for pattern in patterns:
                 match = re.findall(pattern, script_content)
                 if match:
-                    # print(match)
                     download_url = match[0][7:-1]
                     break
 

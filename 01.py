@@ -4,7 +4,7 @@ import time
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 from settings import *
 
-main_url = 'https://id.pinterest.com/ideas/'
+main_url = 'https://pinterest.com/ideas/'
 options = webdriver.ChromeOptions()
 
 if not show_browser:  # отображать ли браузер во время работы

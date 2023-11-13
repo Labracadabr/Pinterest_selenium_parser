@@ -6,8 +6,6 @@ import time
 start_time = time.time()
 
 
-step = 16  # максимальное число параллельных загрузок
-
 # где сохраняются файлы
 save_folder = 'save_folder'
 if not os.path.exists(save_folder):
@@ -38,20 +36,20 @@ async def download_from_link(session, link):
         async with session.get(url=link) as response:
             filename = os.path.join(save_folder, f'{name}.{extension}')
             # создать файл
-            with open(filename, 'wb') as video:
+            with open(filename, 'wb') as media:
                 while True:  # скачивание чанками
                     chunk = await response.content.read(100000)
                     if not chunk:
                         break
-                    video.write(chunk)
+                    media.write(chunk)
     # в случае ошибки написать ссылку и ошибку
     except Exception as e:
-        print('Error', link)
+        print('ошибка', link)
         print(e)
 
 
 async def main():
-    global step
+    step = 16  # максимальное число параллельных загрузок
     # левая и правая граница скользящего окна
     last_step = 0
     next_step = step

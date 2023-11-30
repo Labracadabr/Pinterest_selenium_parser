@@ -88,7 +88,11 @@ with webdriver.Chrome(options=options) as browser:
             # если высота не меняется 4 скрола подряд - скролить больше некуда
             if len(set(heights)) == 1:
                 print("\nДостигнут конец страницы")
+
+                # сохранить пройденную ссылку, чтобы больше не открывать
                 done_list.append(url)
+                with open(done_file, 'a', encoding='utf-8') as f:
+                    print(url, file=f)
                 break
 
         print('Сохранение')

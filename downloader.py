@@ -1,29 +1,40 @@
 import aiohttp
 import asyncio
 import os
-from settings import download_links
+from settings import download_links, folder
 import time
 start_time = time.time()
 
 
 # где сохраняются файлы
-save_folder = 'save_folder'
+save_folder = f'{folder}/save_folder'
 if not os.path.exists(save_folder):
     os.makedirs(save_folder)  # создается папка
 
+print('Чтение')
 # ссылки, по которым будем скачивать файлы
 with open(download_links, 'r', encoding='utf-8') as f:
-    links_arr = list(set(line.strip() for line in f))
-
-# по названиям отфильтровать то, что еще не скачано (исключить то, что уже находится в save_folder)
-download_filtered = [link for link in links_arr if link.split('/')[-1] not in os.listdir(save_folder)]
+    already_saved = os.listdir(save_folder)  # что уже скачано
+    # по названиям отфильтровать то, что еще не скачано (исключить то, что уже находится в save_folder)
+    download_list = [line.strip() for line in f if line.strip().split('/')[-1] not in already_saved]
 
 # убедиться, что список не пуст
-if not download_filtered:
+if not download_list:
     print('Скачивать нечего')
     exit()
-print('Скачивание')
-length = len(download_filtered)
+length = len(download_list)
+print('Скачивание', length, 'файлов')
+
+
+# узнать размер папки
+def get_folder_size(folder_path):
+    # измерить каждый файл в папке
+    files = os.listdir(folder_path)
+    total_size = sum(os.path.getsize(os.path.join(folder_path, filename)) for filename in files)
+
+    # конвертация байтов в Гб
+    total_size_gb = round(total_size / (1024 ** 3), 3)
+    return total_size_gb
 
 
 # скачивание по ссылкам
@@ -38,7 +49,7 @@ async def download_from_link(session, link):
             # создать файл
             with open(filename, 'wb') as media:
                 while True:  # скачивание чанками
-                    chunk = await response.content.read(100000)
+                    chunk = await response.content.read(1_000_000)
                     if not chunk:
                         break
                     media.write(chunk)
@@ -49,24 +60,16 @@ async def download_from_link(session, link):
 
 
 async def main():
-    step = 16  # максимальное число параллельных загрузок
-    # левая и правая граница скользящего окна
-    last_step = 0
-    next_step = step
+    step = 32  # максимальное число параллельных загрузок
 
     # скачивать пока не закончится список
-    while True:
+    for i in range(0, length, step):
         async with aiohttp.ClientSession() as session:
-            tasks = [download_from_link(session, link) for link in download_filtered[last_step:next_step]]
-            last_step += step
-            next_step += step
-            if tasks:
-                await asyncio.gather(*tasks)
-                if length <= last_step:  # если это последний цикл скачивания
-                    last_step = length
-                print(f'Скачано {last_step} из {length}')
-            else:
-                break
+            tasks = [download_from_link(session, link) for link in download_list[i:i+step]]
+            await asyncio.gather(*tasks, return_exceptions=True)
+
+        gb = get_folder_size(save_folder)
+        print(f'Скачано {min(i+step, length)} из {length}:', gb, 'GB')
 
 
 asyncio.run(main())

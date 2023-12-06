@@ -18,12 +18,14 @@ search_requests: list = ['3d animation video', '2d animation video', '3d animati
 show_browser: bool = True
 
 # где сохранятся ссылки
-primary_save_file = 'primary_pin_urls.csv'
-secondary_save_file = 'secondary_pin_urls.csv'
-done_file = 'done.csv'
-download_links = 'download.csv'
+folder = 'project1'  # для каждой новой задачи переименовать папку folder
+primary_save_file = f'{folder}/primary_pin_urls.csv'
+secondary_save_file = f'{folder}/secondary_pin_urls.csv'
+done_file = f'{folder}/done.csv'
+download_links = f'{folder}/download.csv'
 
 # создать файлы если их нет
+os.makedirs(folder, exist_ok=True)
 for file in (primary_save_file, secondary_save_file, done_file, download_links):
     if not os.path.isfile(file):
         with open(file, 'w', encoding='utf-8') as f:

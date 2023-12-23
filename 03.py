@@ -4,7 +4,9 @@ from bs4 import BeautifulSoup
 from settings import *
 import re
 import time
-
+import platform
+if platform.system() == 'Windows':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 start_time = time.time()
 
 
@@ -41,6 +43,7 @@ async def fetch_url(session, url):
                     download_url = match[0][7:-1]
                     break
 
+            # сохранить найденную ссылку
             if download_url:
                 download_arr.append(download_url)
 
@@ -52,25 +55,14 @@ async def fetch_url(session, url):
 async def main():
     length = len(urls)
     step = 1024  # по столько запросов за раз
-    # левая и правая граница скользящего окна
-    last_step = 0
-    next_step = step
 
-    # собирать пока не закончится список
-    while True:
+    # скачивать пока не закончится список
+    for i in range(0, length, step):
         async with aiohttp.ClientSession() as session:
-            tasks = [fetch_url(session, url) for url in urls[last_step:next_step]]
-            last_step += step
-            next_step += step
-            if tasks:
-                await asyncio.gather(*tasks)
-                if length <= last_step:  # если это последний цикл запросов
-                    last_step = length
-                print(f'Собрано {last_step} из {length}')
+            tasks = [fetch_url(session, url) for url in urls[i:i+step]]
+            await asyncio.gather(*tasks, return_exceptions=True)
 
-            else:
-                break
-
+        print(f'Открыто {min(i+step, length)} из {length}')
 
 asyncio.run(main())
 

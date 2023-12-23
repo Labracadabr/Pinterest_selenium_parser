@@ -3,6 +3,9 @@ import asyncio
 import os
 from settings import download_links, folder
 import time
+import platform
+if platform.system() == 'Windows':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 start_time = time.time()
 
 
@@ -20,8 +23,7 @@ with open(download_links, 'r', encoding='utf-8') as f:
 
 # убедиться, что список не пуст
 if not download_list:
-    print('Скачивать нечего')
-    exit()
+    exit('Скачивать нечего')
 length = len(download_list)
 print('Скачивание', length, 'файлов')
 
@@ -49,7 +51,7 @@ async def download_from_link(session, link):
             # создать файл
             with open(filename, 'wb') as media:
                 while True:  # скачивание чанками
-                    chunk = await response.content.read(1_000_000)
+                    chunk = await response.content.read(1024**2)
                     if not chunk:
                         break
                     media.write(chunk)
@@ -60,7 +62,7 @@ async def download_from_link(session, link):
 
 
 async def main():
-    step = 32  # максимальное число параллельных загрузок
+    step = 32  # максимальное число параллельных загрузок. можно понизить, если возникают ошибки payload
 
     # скачивать пока не закончится список
     for i in range(0, length, step):

@@ -31,15 +31,7 @@ def find(pin_id):
     div = 0
     while True:
         try:
-            # print('\rfound:', div, end='')
             div += 1
-            # проверка подходит ли тип файла
-            path = f'//*[@id="related-pins:{pin_id}"]/div/div[1]/div[{div}]/div/div/div/div/div[1]/a/div/div'
-            elem_type = pin_type(browser, path)
-            if not elem_type:
-                break
-            if elem_type not in desired_types:
-                continue
 
             # поиск ссылки на пост
             xpath = f'//*[@id="related-pins:{pin_id}"]/div/div[1]/div[{div}]/div/div/div/div/div[1]/a'
@@ -47,6 +39,7 @@ def find(pin_id):
 
             # вытащить из найденного элемента ссылку на пост
             href = element.get_attribute('href')
+            # print('href', href)
             found_links.append(href)
 
         except StaleElementReferenceException:  # если нет ссылки

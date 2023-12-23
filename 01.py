@@ -3,21 +3,10 @@ from selenium.webdriver.common.by import By
 import time
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 from settings import *
-
-main_url = 'https://pinterest.com/ideas/'
 options = webdriver.ChromeOptions()
 
 if not show_browser:  # отображать ли браузер во время работы
     options.add_argument('--headless')
-
-
-def search_request(req):
-    # найти поисковую строку и нажать
-    bar = browser.find_element(By.XPATH,
-                               '//*[@id="__PWS_ROOT__"]/div/div[1]/div/div[1]/div/div[2]/div/div/form/div/div[1]/div[2]/div/input')
-    bar.clear()
-    bar.send_keys(req + '\n')  # ввод запроса, '\n' имитирует нажатие Enter
-    print('запрос:', req)
 
 
 def scroll(y):
@@ -25,27 +14,20 @@ def scroll(y):
     # print('scroll:', y, 'px')
 
 
-def find():
+def find(request):
     # поиск по пути элемента (xpath)
     div = 0
     while True:
         try:
             div += 1
 
-            # проверка подходит ли тип файла
-            path = f'//*[@id="mweb-unauth-container"]/div/div[2]/div[2]/div/div/div/div[1]/div[{div}]/div/div/div/div/div[1]/a/div/div'
-            elem_type = pin_type(browser, path)
-            if not elem_type:
-                break
-            if elem_type not in desired_types:
-                continue
-
             # поиск ссылки на пост
-            xpath = f'//*[@id="mweb-unauth-container"]/div/div[2]/div[2]/div/div/div/div[1]/div[{div}]/div/div/div/div/div[1]/a'
+            xpath = f'//*[@id="search:pins:{"-".join(request.split())}::---:"]/div/div[1]/div[{div}]/div/div/div/div/div[1]/a'
             element = browser.find_element(By.XPATH, xpath)
 
             # вытащить из найденного элемента ссылку на пост
             href = element.get_attribute('href')
+            # print('href', href)
             found_links.append(href)
 
         except StaleElementReferenceException:  # если нет ссылки
@@ -58,18 +40,20 @@ def find():
 with webdriver.Chrome(options=options) as browser:
 
     # перебор каждого поискового запроса
-    for request in search_requests:
-        found_links = []
-        browser.get(main_url)  # открыть сайт
+    for search_request in search_requests:
+        # открыть поисковую ссылку
+        search_url = f'https://id.pinterest.com/search/pins/?q={"%20".join(search_request.split())}'
+        print('search', search_url)
         time.sleep(1)
-        search_request(request)  # вбить поиск
-        time.sleep(2)
+        browser.get(search_url)
+
         heights = [x for x in range(4)]  # список последних высот страницы
+        found_links = []
 
         # скролим до упора
         while True:
             time.sleep(1)
-            find()  # поиск нужных элементов
+            find(request=search_request)  # поиск нужных элементов
             print('\rнайдено:', len(found_links), end='')
             scroll(y=4000)  # скролл вниз
 

@@ -7,10 +7,6 @@ import time
 
 start_time = time.time()
 
-# RegEx паттерны для нахождения ссылки на скачивание
-patterns = [r'"url":"https://i\.pinimg\.com[^"]+\.gif"',
-            r'"url":"https://v1\.pinimg\.com[^"]+\.mp4"',
-            r'"url":"https://i\.pinimg\.com/originals[^"]+\.jpg"',]
 
 # ссылки на посты, которые нужно открыть
 with open(primary_save_file, 'r') as f1, open(secondary_save_file, 'r') as f2:

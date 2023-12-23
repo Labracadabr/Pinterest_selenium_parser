@@ -3,22 +3,25 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 
 
-# Какие файлы ищем. Есть 4 типа, закомментить ненужные
-desired_types: list = [
-    'video',
-    'storyPin',  # storyPin - тоже видео
-    'gif',
-    'image',
-]
 # поисковые запросы
-search_requests: list = ['3d animation video', '2d animation video', '3d animation gif', '2d animation gif', ]  # пример
-# Дальше необязательно что-либо менять
+search_requests: list = ['black cat', 'black dog']  # пример
 
-# Отображать ли браузер во время скраппинга. Можно скрыть, чтобы не мешало и не нагружать железо
-show_browser: bool = True
+# RegEx паттерны для нахождения ссылки на скачивание. Закомментить ненужные типы файлов. Применяется в файле 03
+patterns: list = [
+    r'"url":"https://i\.pinimg\.com[^"]+\.gif"',
+    r'"url":"https://v1\.pinimg\.com[^"]+\.mp4"',
+    r'"url":"https://i\.pinimg\.com/originals[^"]+\.jpg"',
+    ]
 
-# где сохранятся ссылки
-folder = 'project1'  # для каждой новой задачи переименовать папку folder
+# для каждой новой задачи переименовать папку folder
+folder: str = 'project_1'
+
+# Отображать ли браузер во время скрапинга. Можно скрыть, чтобы не мешало и не нагружать железо
+show_browser: bool = False
+
+# # # Дальше ничего не менять # # #
+
+# файлы, где сохранятся ссылки
 primary_save_file = f'{folder}/primary_pin_urls.csv'
 secondary_save_file = f'{folder}/secondary_pin_urls.csv'
 done_file = f'{folder}/done.csv'
@@ -54,20 +57,7 @@ def save(file: str, data: list):
     return old_len, new_len
 
 
-# найти тип файла (например pincard-gif-with-link)
-def pin_type(browser, path: str):
-    try:
-        element = browser.find_element(By.XPATH, path)
-        el_type = element.get_dom_attribute('data-test-id')
-        el_type = el_type.split('-')[1]  # "pincard-gif-with-link" -> "gif"
-    except AttributeError as e:
-        el_type = 'bubble'  # если попался не пост, а блок рекомендаций
-    except NoSuchElementException:
-        return None  # если тип файла не найден, то вернуть None и прервать цикл
-    # print(el_type)
-    return el_type
-
-
+# вывод в консоль статуса сбора
 def print_status(found_links, new_len, old_len):
     offset = 15
     print('собрано ссылок'.ljust(offset), len(found_links))
